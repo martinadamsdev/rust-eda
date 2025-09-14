@@ -1,0 +1,653 @@
+use crate::models::component::{SymbolGraphics, GraphicsBounds};
+use crate::models::component::{ComponentLibrary, ComponentTemplate, ComponentSymbol, DrawCommand, DrawCommandType, DrawStyle, PinTemplate};
+use crate::models::{PinType, ElectricalType};
+use crate::utils::error::Result;
+
+fn standard_electrical() -> ElectricalType {
+    ElectricalType {
+        voltage: None,
+        current: None,
+        impedance: None,
+    }
+}
+
+pub fn add_logic_gates(library: &mut ComponentLibrary) -> Result<()> {
+    add_or_gate(library)?;
+    add_not_gate(library)?;
+    add_nand_gate(library)?;
+    add_nor_gate(library)?;
+    add_xor_gate(library)?;
+    add_xnor_gate(library)?;
+    add_buffer_gate(library)?;
+    Ok(())
+}
+
+fn add_or_gate(library: &mut ComponentLibrary) -> Result<()> {
+    let symbol = ComponentSymbol {
+        width: 60.0,
+        height: 40.0,
+        draw_commands: vec![
+            // OR gate curved shape
+            DrawCommand {
+                command_type: DrawCommandType::Arc,
+                parameters: vec![-30.0, 0.0, 25.0, -45.0, 45.0],
+                style: Some(DrawStyle {
+                    stroke_width: 2.0,
+                    stroke_color: "#000000".to_string(),
+                    fill_color: None,
+                }),
+            },
+            DrawCommand {
+                command_type: DrawCommandType::Arc,
+                parameters: vec![0.0, 0.0, 30.0, -60.0, 60.0],
+                style: Some(DrawStyle {
+                    stroke_width: 2.0,
+                    stroke_color: "#000000".to_string(),
+                    fill_color: None,
+                }),
+            },
+            // Input lines
+            DrawCommand {
+                command_type: DrawCommandType::Line,
+                parameters: vec![-30.0, -10.0, -15.0, -10.0],
+                style: None,
+            },
+            DrawCommand {
+                command_type: DrawCommandType::Line,
+                parameters: vec![-30.0, 10.0, -15.0, 10.0],
+                style: None,
+            },
+            // Output line
+            DrawCommand {
+                command_type: DrawCommandType::Line,
+                parameters: vec![25.0, 0.0, 30.0, 0.0],
+                style: None,
+            },
+        ],
+    };
+
+    let mut template = ComponentTemplate::new(
+        "OR Gate".to_string(),
+        "digital".to_string(),
+        symbol
+    )?;
+    
+    template.add_pin(PinTemplate {
+        id: "A".to_string(),
+        name: "Input A".to_string(),
+        number: "1".to_string(),
+        x: -30.0,
+        y: -10.0,
+        pin_type: PinType::Input,
+        electrical: standard_electrical(),
+    })?;
+    
+    template.add_pin(PinTemplate {
+        id: "B".to_string(),
+        name: "Input B".to_string(),
+        number: "2".to_string(),
+        x: -30.0,
+        y: 10.0,
+        pin_type: PinType::Input,
+        electrical: standard_electrical(),
+    })?;
+    
+    template.add_pin(PinTemplate {
+        id: "Y".to_string(),
+        name: "Output".to_string(),
+        number: "3".to_string(),
+        x: 30.0,
+        y: 0.0,
+        pin_type: PinType::Output,
+        electrical: standard_electrical(),
+    })?;
+
+    template.keywords = vec!["or".to_string(), "gate".to_string(), "logic".to_string()];
+    library.add_component_template(template)?;
+    
+    Ok(())
+}
+
+fn add_not_gate(library: &mut ComponentLibrary) -> Result<()> {
+    let symbol = ComponentSymbol {
+        width: 50.0,
+        height: 30.0,
+        draw_commands: vec![
+            // Triangle
+            DrawCommand {
+                command_type: DrawCommandType::Polygon,
+                parameters: vec![-15.0, -15.0, -15.0, 15.0, 15.0, 0.0],
+                style: Some(DrawStyle {
+                    stroke_width: 2.0,
+                    stroke_color: "#000000".to_string(),
+                    fill_color: None,
+                }),
+            },
+            // Inversion bubble
+            DrawCommand {
+                command_type: DrawCommandType::Circle,
+                parameters: vec![18.0, 0.0, 3.0],
+                style: Some(DrawStyle {
+                    stroke_width: 2.0,
+                    stroke_color: "#000000".to_string(),
+                    fill_color: Some("#FFFFFF".to_string()),
+                }),
+            },
+            // Input line
+            DrawCommand {
+                command_type: DrawCommandType::Line,
+                parameters: vec![-25.0, 0.0, -15.0, 0.0],
+                style: None,
+            },
+            // Output line
+            DrawCommand {
+                command_type: DrawCommandType::Line,
+                parameters: vec![21.0, 0.0, 25.0, 0.0],
+                style: None,
+            },
+        ],
+    };
+
+    let mut template = ComponentTemplate::new(
+        "NOT Gate".to_string(),
+        "digital".to_string(),
+        symbol
+    )?;
+    
+    template.add_pin(PinTemplate {
+        id: "A".to_string(),
+        name: "Input".to_string(),
+        number: "1".to_string(),
+        x: -25.0,
+        y: 0.0,
+        pin_type: PinType::Input,
+        electrical: standard_electrical(),
+    })?;
+    
+    template.add_pin(PinTemplate {
+        id: "Y".to_string(),
+        name: "Output".to_string(),
+        number: "2".to_string(),
+        x: 25.0,
+        y: 0.0,
+        pin_type: PinType::Output,
+        electrical: standard_electrical(),
+    })?;
+
+    template.keywords = vec!["not".to_string(), "inverter".to_string(), "gate".to_string()];
+    library.add_component_template(template)?;
+    
+    Ok(())
+}
+
+fn add_nand_gate(library: &mut ComponentLibrary) -> Result<()> {
+    let symbol = ComponentSymbol {
+        width: 65.0,
+        height: 40.0,
+        draw_commands: vec![
+            // AND gate shape
+            DrawCommand {
+                command_type: DrawCommandType::Line,
+                parameters: vec![-20.0, -20.0, 0.0, -20.0],
+                style: Some(DrawStyle {
+                    stroke_width: 2.0,
+                    stroke_color: "#000000".to_string(),
+                    fill_color: None,
+                }),
+            },
+            DrawCommand {
+                command_type: DrawCommandType::Arc,
+                parameters: vec![0.0, 0.0, 20.0, -90.0, 90.0],
+                style: Some(DrawStyle {
+                    stroke_width: 2.0,
+                    stroke_color: "#000000".to_string(),
+                    fill_color: None,
+                }),
+            },
+            DrawCommand {
+                command_type: DrawCommandType::Line,
+                parameters: vec![-20.0, 20.0, 0.0, 20.0],
+                style: Some(DrawStyle {
+                    stroke_width: 2.0,
+                    stroke_color: "#000000".to_string(),
+                    fill_color: None,
+                }),
+            },
+            DrawCommand {
+                command_type: DrawCommandType::Line,
+                parameters: vec![-20.0, -20.0, -20.0, 20.0],
+                style: Some(DrawStyle {
+                    stroke_width: 2.0,
+                    stroke_color: "#000000".to_string(),
+                    fill_color: None,
+                }),
+            },
+            // Inversion bubble
+            DrawCommand {
+                command_type: DrawCommandType::Circle,
+                parameters: vec![23.0, 0.0, 3.0],
+                style: Some(DrawStyle {
+                    stroke_width: 2.0,
+                    stroke_color: "#000000".to_string(),
+                    fill_color: Some("#FFFFFF".to_string()),
+                }),
+            },
+            // Input lines
+            DrawCommand {
+                command_type: DrawCommandType::Line,
+                parameters: vec![-30.0, -10.0, -20.0, -10.0],
+                style: None,
+            },
+            DrawCommand {
+                command_type: DrawCommandType::Line,
+                parameters: vec![-30.0, 10.0, -20.0, 10.0],
+                style: None,
+            },
+            // Output line
+            DrawCommand {
+                command_type: DrawCommandType::Line,
+                parameters: vec![26.0, 0.0, 32.5, 0.0],
+                style: None,
+            },
+        ],
+    };
+
+    let mut template = ComponentTemplate::new(
+        "NAND Gate".to_string(),
+        "digital".to_string(),
+        symbol
+    )?;
+    
+    template.add_pin(PinTemplate {
+        id: "A".to_string(),
+        name: "Input A".to_string(),
+        number: "1".to_string(),
+        x: -30.0,
+        y: -10.0,
+        pin_type: PinType::Input,
+        electrical: standard_electrical(),
+    })?;
+    
+    template.add_pin(PinTemplate {
+        id: "B".to_string(),
+        name: "Input B".to_string(),
+        number: "2".to_string(),
+        x: -30.0,
+        y: 10.0,
+        pin_type: PinType::Input,
+        electrical: standard_electrical(),
+    })?;
+    
+    template.add_pin(PinTemplate {
+        id: "Y".to_string(),
+        name: "Output".to_string(),
+        number: "3".to_string(),
+        x: 32.5,
+        y: 0.0,
+        pin_type: PinType::Output,
+        electrical: standard_electrical(),
+    })?;
+
+    template.keywords = vec!["nand".to_string(), "gate".to_string(), "logic".to_string()];
+    library.add_component_template(template)?;
+    
+    Ok(())
+}
+
+fn add_nor_gate(library: &mut ComponentLibrary) -> Result<()> {
+    let symbol = ComponentSymbol {
+        width: 65.0,
+        height: 40.0,
+        draw_commands: vec![
+            // OR gate curved shape
+            DrawCommand {
+                command_type: DrawCommandType::Arc,
+                parameters: vec![-30.0, 0.0, 25.0, -45.0, 45.0],
+                style: Some(DrawStyle {
+                    stroke_width: 2.0,
+                    stroke_color: "#000000".to_string(),
+                    fill_color: None,
+                }),
+            },
+            DrawCommand {
+                command_type: DrawCommandType::Arc,
+                parameters: vec![0.0, 0.0, 30.0, -60.0, 60.0],
+                style: Some(DrawStyle {
+                    stroke_width: 2.0,
+                    stroke_color: "#000000".to_string(),
+                    fill_color: None,
+                }),
+            },
+            // Inversion bubble
+            DrawCommand {
+                command_type: DrawCommandType::Circle,
+                parameters: vec![28.0, 0.0, 3.0],
+                style: Some(DrawStyle {
+                    stroke_width: 2.0,
+                    stroke_color: "#000000".to_string(),
+                    fill_color: Some("#FFFFFF".to_string()),
+                }),
+            },
+            // Input lines
+            DrawCommand {
+                command_type: DrawCommandType::Line,
+                parameters: vec![-30.0, -10.0, -15.0, -10.0],
+                style: None,
+            },
+            DrawCommand {
+                command_type: DrawCommandType::Line,
+                parameters: vec![-30.0, 10.0, -15.0, 10.0],
+                style: None,
+            },
+            // Output line
+            DrawCommand {
+                command_type: DrawCommandType::Line,
+                parameters: vec![31.0, 0.0, 32.5, 0.0],
+                style: None,
+            },
+        ],
+    };
+
+    let mut template = ComponentTemplate::new(
+        "NOR Gate".to_string(),
+        "digital".to_string(),
+        symbol
+    )?;
+    
+    template.add_pin(PinTemplate {
+        id: "A".to_string(),
+        name: "Input A".to_string(),
+        number: "1".to_string(),
+        x: -30.0,
+        y: -10.0,
+        pin_type: PinType::Input,
+        electrical: standard_electrical(),
+    })?;
+    
+    template.add_pin(PinTemplate {
+        id: "B".to_string(),
+        name: "Input B".to_string(),
+        number: "2".to_string(),
+        x: -30.0,
+        y: 10.0,
+        pin_type: PinType::Input,
+        electrical: standard_electrical(),
+    })?;
+    
+    template.add_pin(PinTemplate {
+        id: "Y".to_string(),
+        name: "Output".to_string(),
+        number: "3".to_string(),
+        x: 32.5,
+        y: 0.0,
+        pin_type: PinType::Output,
+        electrical: standard_electrical(),
+    })?;
+
+    template.keywords = vec!["nor".to_string(), "gate".to_string(), "logic".to_string()];
+    library.add_component_template(template)?;
+    
+    Ok(())
+}
+
+fn add_xor_gate(library: &mut ComponentLibrary) -> Result<()> {
+    let symbol = ComponentSymbol {
+        width: 60.0,
+        height: 40.0,
+        draw_commands: vec![
+            // XOR gate shape (OR with extra curve)
+            DrawCommand {
+                command_type: DrawCommandType::Arc,
+                parameters: vec![-35.0, 0.0, 25.0, -45.0, 45.0],
+                style: Some(DrawStyle {
+                    stroke_width: 2.0,
+                    stroke_color: "#000000".to_string(),
+                    fill_color: None,
+                }),
+            },
+            DrawCommand {
+                command_type: DrawCommandType::Arc,
+                parameters: vec![-30.0, 0.0, 25.0, -45.0, 45.0],
+                style: Some(DrawStyle {
+                    stroke_width: 2.0,
+                    stroke_color: "#000000".to_string(),
+                    fill_color: None,
+                }),
+            },
+            DrawCommand {
+                command_type: DrawCommandType::Arc,
+                parameters: vec![0.0, 0.0, 30.0, -60.0, 60.0],
+                style: Some(DrawStyle {
+                    stroke_width: 2.0,
+                    stroke_color: "#000000".to_string(),
+                    fill_color: None,
+                }),
+            },
+            // Input lines
+            DrawCommand {
+                command_type: DrawCommandType::Line,
+                parameters: vec![-35.0, -10.0, -20.0, -10.0],
+                style: None,
+            },
+            DrawCommand {
+                command_type: DrawCommandType::Line,
+                parameters: vec![-35.0, 10.0, -20.0, 10.0],
+                style: None,
+            },
+            // Output line
+            DrawCommand {
+                command_type: DrawCommandType::Line,
+                parameters: vec![25.0, 0.0, 30.0, 0.0],
+                style: None,
+            },
+        ],
+    };
+
+    let mut template = ComponentTemplate::new(
+        "XOR Gate".to_string(),
+        "digital".to_string(),
+        symbol
+    )?;
+    
+    template.add_pin(PinTemplate {
+        id: "A".to_string(),
+        name: "Input A".to_string(),
+        number: "1".to_string(),
+        x: -35.0,
+        y: -10.0,
+        pin_type: PinType::Input,
+        electrical: standard_electrical(),
+    })?;
+    
+    template.add_pin(PinTemplate {
+        id: "B".to_string(),
+        name: "Input B".to_string(),
+        number: "2".to_string(),
+        x: -35.0,
+        y: 10.0,
+        pin_type: PinType::Input,
+        electrical: standard_electrical(),
+    })?;
+    
+    template.add_pin(PinTemplate {
+        id: "Y".to_string(),
+        name: "Output".to_string(),
+        number: "3".to_string(),
+        x: 30.0,
+        y: 0.0,
+        pin_type: PinType::Output,
+        electrical: standard_electrical(),
+    })?;
+
+    template.keywords = vec!["xor".to_string(), "exclusive".to_string(), "gate".to_string()];
+    library.add_component_template(template)?;
+    
+    Ok(())
+}
+
+fn add_xnor_gate(library: &mut ComponentLibrary) -> Result<()> {
+    let symbol = ComponentSymbol {
+        width: 65.0,
+        height: 40.0,
+        draw_commands: vec![
+            // XNOR gate shape (XOR with bubble)
+            DrawCommand {
+                command_type: DrawCommandType::Arc,
+                parameters: vec![-35.0, 0.0, 25.0, -45.0, 45.0],
+                style: Some(DrawStyle {
+                    stroke_width: 2.0,
+                    stroke_color: "#000000".to_string(),
+                    fill_color: None,
+                }),
+            },
+            DrawCommand {
+                command_type: DrawCommandType::Arc,
+                parameters: vec![-30.0, 0.0, 25.0, -45.0, 45.0],
+                style: Some(DrawStyle {
+                    stroke_width: 2.0,
+                    stroke_color: "#000000".to_string(),
+                    fill_color: None,
+                }),
+            },
+            DrawCommand {
+                command_type: DrawCommandType::Arc,
+                parameters: vec![0.0, 0.0, 30.0, -60.0, 60.0],
+                style: Some(DrawStyle {
+                    stroke_width: 2.0,
+                    stroke_color: "#000000".to_string(),
+                    fill_color: None,
+                }),
+            },
+            // Inversion bubble
+            DrawCommand {
+                command_type: DrawCommandType::Circle,
+                parameters: vec![28.0, 0.0, 3.0],
+                style: Some(DrawStyle {
+                    stroke_width: 2.0,
+                    stroke_color: "#000000".to_string(),
+                    fill_color: Some("#FFFFFF".to_string()),
+                }),
+            },
+            // Input lines
+            DrawCommand {
+                command_type: DrawCommandType::Line,
+                parameters: vec![-35.0, -10.0, -20.0, -10.0],
+                style: None,
+            },
+            DrawCommand {
+                command_type: DrawCommandType::Line,
+                parameters: vec![-35.0, 10.0, -20.0, 10.0],
+                style: None,
+            },
+            // Output line
+            DrawCommand {
+                command_type: DrawCommandType::Line,
+                parameters: vec![31.0, 0.0, 32.5, 0.0],
+                style: None,
+            },
+        ],
+    };
+
+    let mut template = ComponentTemplate::new(
+        "XNOR Gate".to_string(),
+        "digital".to_string(),
+        symbol
+    )?;
+    
+    template.add_pin(PinTemplate {
+        id: "A".to_string(),
+        name: "Input A".to_string(),
+        number: "1".to_string(),
+        x: -35.0,
+        y: -10.0,
+        pin_type: PinType::Input,
+        electrical: standard_electrical(),
+    })?;
+    
+    template.add_pin(PinTemplate {
+        id: "B".to_string(),
+        name: "Input B".to_string(),
+        number: "2".to_string(),
+        x: -35.0,
+        y: 10.0,
+        pin_type: PinType::Input,
+        electrical: standard_electrical(),
+    })?;
+    
+    template.add_pin(PinTemplate {
+        id: "Y".to_string(),
+        name: "Output".to_string(),
+        number: "3".to_string(),
+        x: 32.5,
+        y: 0.0,
+        pin_type: PinType::Output,
+        electrical: standard_electrical(),
+    })?;
+
+    template.keywords = vec!["xnor".to_string(), "exclusive".to_string(), "gate".to_string()];
+    library.add_component_template(template)?;
+    
+    Ok(())
+}
+
+fn add_buffer_gate(library: &mut ComponentLibrary) -> Result<()> {
+    let symbol = ComponentSymbol {
+        width: 45.0,
+        height: 30.0,
+        draw_commands: vec![
+            // Triangle (buffer)
+            DrawCommand {
+                command_type: DrawCommandType::Polygon,
+                parameters: vec![-15.0, -15.0, -15.0, 15.0, 15.0, 0.0],
+                style: Some(DrawStyle {
+                    stroke_width: 2.0,
+                    stroke_color: "#000000".to_string(),
+                    fill_color: None,
+                }),
+            },
+            // Input line
+            DrawCommand {
+                command_type: DrawCommandType::Line,
+                parameters: vec![-22.5, 0.0, -15.0, 0.0],
+                style: None,
+            },
+            // Output line
+            DrawCommand {
+                command_type: DrawCommandType::Line,
+                parameters: vec![15.0, 0.0, 22.5, 0.0],
+                style: None,
+            },
+        ],
+    };
+
+    let mut template = ComponentTemplate::new(
+        "Buffer".to_string(),
+        "digital".to_string(),
+        symbol
+    )?;
+    
+    template.add_pin(PinTemplate {
+        id: "A".to_string(),
+        name: "Input".to_string(),
+        number: "1".to_string(),
+        x: -22.5,
+        y: 0.0,
+        pin_type: PinType::Input,
+        electrical: standard_electrical(),
+    })?;
+    
+    template.add_pin(PinTemplate {
+        id: "Y".to_string(),
+        name: "Output".to_string(),
+        number: "2".to_string(),
+        x: 22.5,
+        y: 0.0,
+        pin_type: PinType::Output,
+        electrical: standard_electrical(),
+    })?;
+
+    template.keywords = vec!["buffer".to_string(), "gate".to_string(), "driver".to_string()];
+    library.add_component_template(template)?;
+    
+    Ok(())
+}

@@ -1,0 +1,492 @@
+use crate::models::component::{ComponentLibrary, ComponentTemplate, ComponentSymbol, DrawCommand, DrawCommandType, DrawStyle, PinTemplate, SymbolGraphics, GraphicsBounds};
+use crate::models::{PinType, ElectricalType};
+use crate::utils::error::Result;
+
+fn standard_electrical() -> ElectricalType {
+    ElectricalType {
+        voltage: None,
+        current: None,
+        impedance: None,
+    }
+}
+
+fn power_electrical(voltage: f64) -> ElectricalType {
+    ElectricalType {
+        voltage: Some(voltage),
+        current: None,
+        impedance: None,
+    }
+}
+
+pub fn add_integrated_circuits(library: &mut ComponentLibrary) -> Result<()> {
+    add_555_timer(library)?;
+    add_comparator(library)?;
+    add_voltage_regulator(library)?;
+    add_microcontroller(library)?;
+    add_adc(library)?;
+    add_dac(library)?;
+    add_multiplexer(library)?;
+    add_shift_register(library)?;
+    add_counter(library)?;
+    add_decoder(library)?;
+    Ok(())
+}
+
+fn add_555_timer(library: &mut ComponentLibrary) -> Result<()> {
+    let symbol = ComponentSymbol {
+        width: 100.0,
+        height: 80.0,
+        draw_commands: vec![
+            // IC body
+            DrawCommand {
+                command_type: DrawCommandType::Rectangle,
+                parameters: vec![-40.0, -40.0, 80.0, 80.0],
+                style: Some(DrawStyle {
+                    stroke_width: 2.0,
+                    stroke_color: "#000000".to_string(),
+                    fill_color: Some("#F0F0F0".to_string()),
+                }),
+            },
+            // Label
+            DrawCommand {
+                command_type: DrawCommandType::Text,
+                parameters: vec![0.0, 0.0, 10.0, 555.0],
+                style: None,
+            },
+        ],
+        graphics: Some(SymbolGraphics {
+            bounds: GraphicsBounds {
+                width: 100.0,
+                height: 80.0,
+            },
+        }),
+    };
+
+    let mut template = ComponentTemplate::new("555 Timer".to_string(), "digital".to_string(), symbol)?;
+    
+    // Pin definitions for 555 timer
+    template.add_pin(PinTemplate { id: "GND".to_string(), name: "GND".to_string(), number: "1".to_string(), x: -50.0, y: -30.0, pin_type: PinType::Ground, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "TRIG".to_string(), name: "Trigger".to_string(), number: "2".to_string(), x: -50.0, y: -10.0, pin_type: PinType::Input, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "OUT".to_string(), name: "Output".to_string(), number: "3".to_string(), x: -50.0, y: 10.0, pin_type: PinType::Output, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "RST".to_string(), name: "Reset".to_string(), number: "4".to_string(), x: -50.0, y: 30.0, pin_type: PinType::Input, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "CTRL".to_string(), name: "Control".to_string(), number: "5".to_string(), x: 50.0, y: 30.0, pin_type: PinType::Input, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "THR".to_string(), name: "Threshold".to_string(), number: "6".to_string(), x: 50.0, y: 10.0, pin_type: PinType::Input, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "DIS".to_string(), name: "Discharge".to_string(), number: "7".to_string(), x: 50.0, y: -10.0, pin_type: PinType::Output, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "VCC".to_string(), name: "VCC".to_string(), number: "8".to_string(), x: 50.0, y: -30.0, pin_type: PinType::Power, electrical: power_electrical(5.0) })?;
+
+    template.keywords = vec!["555".to_string(), "timer".to_string(), "oscillator".to_string()];
+    library.add_component_template(template)?;
+    Ok(())
+}
+
+fn add_comparator(library: &mut ComponentLibrary) -> Result<()> {
+    let symbol = ComponentSymbol {
+        width: 80.0,
+        height: 60.0,
+        draw_commands: vec![
+            // Op-amp triangle
+            DrawCommand {
+                command_type: DrawCommandType::Polygon,
+                parameters: vec![-30.0, -30.0, -30.0, 30.0, 30.0, 0.0],
+                style: Some(DrawStyle {
+                    stroke_width: 2.0,
+                    stroke_color: "#000000".to_string(),
+                    fill_color: None,
+                }),
+            },
+            // + symbol
+            DrawCommand {
+                command_type: DrawCommandType::Line,
+                parameters: vec![-20.0, -15.0, -10.0, -15.0],
+                style: None,
+            },
+            DrawCommand {
+                command_type: DrawCommandType::Line,
+                parameters: vec![-15.0, -20.0, -15.0, -10.0],
+                style: None,
+            },
+            // - symbol
+            DrawCommand {
+                command_type: DrawCommandType::Line,
+                parameters: vec![-20.0, 15.0, -10.0, 15.0],
+                style: None,
+            },
+        ],
+        graphics: Some(SymbolGraphics {
+            bounds: GraphicsBounds {
+                width: 80.0,
+                height: 60.0,
+            },
+        }),
+    };
+
+    let mut template = ComponentTemplate::new("Comparator".to_string(), "active".to_string(), symbol)?;
+    
+    template.add_pin(PinTemplate { id: "IN+".to_string(), name: "Non-Inverting".to_string(), number: "1".to_string(), x: -40.0, y: -15.0, pin_type: PinType::Input, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "IN-".to_string(), name: "Inverting".to_string(), number: "2".to_string(), x: -40.0, y: 15.0, pin_type: PinType::Input, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "OUT".to_string(), name: "Output".to_string(), number: "3".to_string(), x: 40.0, y: 0.0, pin_type: PinType::Output, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "VCC".to_string(), name: "VCC".to_string(), number: "4".to_string(), x: 0.0, y: -30.0, pin_type: PinType::Power, electrical: power_electrical(5.0) })?;
+    template.add_pin(PinTemplate { id: "GND".to_string(), name: "GND".to_string(), number: "5".to_string(), x: 0.0, y: 30.0, pin_type: PinType::Ground, electrical: standard_electrical() })?;
+
+    template.keywords = vec!["comparator".to_string(), "lm393".to_string(), "lm339".to_string()];
+    library.add_component_template(template)?;
+    Ok(())
+}
+
+fn add_voltage_regulator(library: &mut ComponentLibrary) -> Result<()> {
+    let symbol = ComponentSymbol {
+        width: 80.0,
+        height: 60.0,
+        draw_commands: vec![
+            // Regulator body
+            DrawCommand {
+                command_type: DrawCommandType::Rectangle,
+                parameters: vec![-30.0, -25.0, 60.0, 50.0],
+                style: Some(DrawStyle {
+                    stroke_width: 2.0,
+                    stroke_color: "#000000".to_string(),
+                    fill_color: Some("#E0E0E0".to_string()),
+                }),
+            },
+            // Label
+            DrawCommand {
+                command_type: DrawCommandType::Text,
+                parameters: vec![0.0, 0.0, 8.0, 7805.0],
+                style: None,
+            },
+        ],
+        graphics: Some(SymbolGraphics {
+            bounds: GraphicsBounds {
+                width: 80.0,
+                height: 60.0,
+            },
+        }),
+    };
+
+    let mut template = ComponentTemplate::new("Voltage Regulator".to_string(), "power".to_string(), symbol)?;
+    
+    template.add_pin(PinTemplate { id: "IN".to_string(), name: "Input".to_string(), number: "1".to_string(), x: -40.0, y: 0.0, pin_type: PinType::Power, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "GND".to_string(), name: "Ground".to_string(), number: "2".to_string(), x: 0.0, y: 30.0, pin_type: PinType::Ground, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "OUT".to_string(), name: "Output".to_string(), number: "3".to_string(), x: 40.0, y: 0.0, pin_type: PinType::Power, electrical: power_electrical(5.0) })?;
+
+    template.keywords = vec!["regulator".to_string(), "7805".to_string(), "lm317".to_string(), "voltage".to_string()];
+    library.add_component_template(template)?;
+    Ok(())
+}
+
+fn add_microcontroller(library: &mut ComponentLibrary) -> Result<()> {
+    let symbol = ComponentSymbol {
+        width: 120.0,
+        height: 160.0,
+        draw_commands: vec![
+            // MCU body
+            DrawCommand {
+                command_type: DrawCommandType::Rectangle,
+                parameters: vec![-50.0, -80.0, 100.0, 160.0],
+                style: Some(DrawStyle {
+                    stroke_width: 2.0,
+                    stroke_color: "#000000".to_string(),
+                    fill_color: Some("#D0D0D0".to_string()),
+                }),
+            },
+            // Label
+            DrawCommand {
+                command_type: DrawCommandType::Text,
+                parameters: vec![0.0, 0.0, 10.0, "MCU".to_string().parse::<f64>().unwrap_or(0.0)],
+                style: None,
+            },
+        ],
+        graphics: Some(SymbolGraphics {
+            bounds: GraphicsBounds {
+                width: 120.0,
+                height: 160.0,
+            },
+        }),
+    };
+
+    let mut template = ComponentTemplate::new("Microcontroller".to_string(), "digital".to_string(), symbol)?;
+    
+    // Simplified pin layout (8 pins per side)
+    for i in 0..8 {
+        let y = -70.0 + (i as f64) * 20.0;
+        template.add_pin(PinTemplate { 
+            id: format!("P{}", i+1), 
+            name: format!("GPIO{}", i), 
+            number: (i+1).to_string(), 
+            x: -60.0, 
+            y, 
+            pin_type: PinType::Bidirectional, 
+            electrical: standard_electrical() 
+        })?;
+        
+        template.add_pin(PinTemplate { 
+            id: format!("P{}", i+9), 
+            name: format!("GPIO{}", i+8), 
+            number: (i+9).to_string(), 
+            x: 60.0, 
+            y, 
+            pin_type: PinType::Bidirectional, 
+            electrical: standard_electrical() 
+        })?;
+    }
+
+    template.keywords = vec!["mcu".to_string(), "microcontroller".to_string(), "atmega".to_string(), "stm32".to_string()];
+    library.add_component_template(template)?;
+    Ok(())
+}
+
+fn add_adc(library: &mut ComponentLibrary) -> Result<()> {
+    let symbol = ComponentSymbol {
+        width: 100.0,
+        height: 80.0,
+        draw_commands: vec![
+            DrawCommand {
+                command_type: DrawCommandType::Rectangle,
+                parameters: vec![-40.0, -30.0, 80.0, 60.0],
+                style: Some(DrawStyle {
+                    stroke_width: 2.0,
+                    stroke_color: "#000000".to_string(),
+                    fill_color: Some("#E8E8E8".to_string()),
+                }),
+            },
+            DrawCommand {
+                command_type: DrawCommandType::Text,
+                parameters: vec![0.0, 0.0, 10.0, "ADC".to_string().parse::<f64>().unwrap_or(0.0)],
+                style: None,
+            },
+        ],
+        graphics: Some(SymbolGraphics {
+            bounds: GraphicsBounds {
+                width: 100.0,
+                height: 80.0,
+            },
+        }),
+    };
+
+    let mut template = ComponentTemplate::new("ADC".to_string(), "digital".to_string(), symbol)?;
+    
+    template.add_pin(PinTemplate { id: "AIN".to_string(), name: "Analog In".to_string(), number: "1".to_string(), x: -50.0, y: 0.0, pin_type: PinType::Input, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "VREF".to_string(), name: "Reference".to_string(), number: "2".to_string(), x: -50.0, y: -20.0, pin_type: PinType::Input, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "CLK".to_string(), name: "Clock".to_string(), number: "3".to_string(), x: 0.0, y: -40.0, pin_type: PinType::Input, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "DATA".to_string(), name: "Data Out".to_string(), number: "4".to_string(), x: 50.0, y: 0.0, pin_type: PinType::Output, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "VCC".to_string(), name: "VCC".to_string(), number: "5".to_string(), x: 0.0, y: 40.0, pin_type: PinType::Power, electrical: power_electrical(5.0) })?;
+    template.add_pin(PinTemplate { id: "GND".to_string(), name: "GND".to_string(), number: "6".to_string(), x: 0.0, y: -40.0, pin_type: PinType::Ground, electrical: standard_electrical() })?;
+
+    template.keywords = vec!["adc".to_string(), "analog".to_string(), "digital".to_string(), "converter".to_string()];
+    library.add_component_template(template)?;
+    Ok(())
+}
+
+fn add_dac(library: &mut ComponentLibrary) -> Result<()> {
+    let symbol = ComponentSymbol {
+        width: 100.0,
+        height: 80.0,
+        draw_commands: vec![
+            DrawCommand {
+                command_type: DrawCommandType::Rectangle,
+                parameters: vec![-40.0, -30.0, 80.0, 60.0],
+                style: Some(DrawStyle {
+                    stroke_width: 2.0,
+                    stroke_color: "#000000".to_string(),
+                    fill_color: Some("#E8E8E8".to_string()),
+                }),
+            },
+            DrawCommand {
+                command_type: DrawCommandType::Text,
+                parameters: vec![0.0, 0.0, 10.0, "DAC".to_string().parse::<f64>().unwrap_or(0.0)],
+                style: None,
+            },
+        ],
+        graphics: Some(SymbolGraphics {
+            bounds: GraphicsBounds {
+                width: 100.0,
+                height: 80.0,
+            },
+        }),
+    };
+
+    let mut template = ComponentTemplate::new("DAC".to_string(), "digital".to_string(), symbol)?;
+    
+    template.add_pin(PinTemplate { id: "DIN".to_string(), name: "Digital In".to_string(), number: "1".to_string(), x: -50.0, y: 0.0, pin_type: PinType::Input, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "CLK".to_string(), name: "Clock".to_string(), number: "2".to_string(), x: -50.0, y: -20.0, pin_type: PinType::Input, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "AOUT".to_string(), name: "Analog Out".to_string(), number: "3".to_string(), x: 50.0, y: 0.0, pin_type: PinType::Output, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "VREF".to_string(), name: "Reference".to_string(), number: "4".to_string(), x: 0.0, y: -40.0, pin_type: PinType::Input, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "VCC".to_string(), name: "VCC".to_string(), number: "5".to_string(), x: 0.0, y: 40.0, pin_type: PinType::Power, electrical: power_electrical(5.0) })?;
+    template.add_pin(PinTemplate { id: "GND".to_string(), name: "GND".to_string(), number: "6".to_string(), x: 0.0, y: -40.0, pin_type: PinType::Ground, electrical: standard_electrical() })?;
+
+    template.keywords = vec!["dac".to_string(), "digital".to_string(), "analog".to_string(), "converter".to_string()];
+    library.add_component_template(template)?;
+    Ok(())
+}
+
+fn add_multiplexer(library: &mut ComponentLibrary) -> Result<()> {
+    let symbol = ComponentSymbol {
+        width: 80.0,
+        height: 100.0,
+        draw_commands: vec![
+            // Trapezoid shape for MUX
+            DrawCommand {
+                command_type: DrawCommandType::Polygon,
+                parameters: vec![-30.0, -40.0, -30.0, 40.0, 30.0, 20.0, 30.0, -20.0],
+                style: Some(DrawStyle {
+                    stroke_width: 2.0,
+                    stroke_color: "#000000".to_string(),
+                    fill_color: None,
+                }),
+            },
+            DrawCommand {
+                command_type: DrawCommandType::Text,
+                parameters: vec![0.0, 0.0, 8.0, "MUX".to_string().parse::<f64>().unwrap_or(0.0)],
+                style: None,
+            },
+        ],
+        graphics: Some(SymbolGraphics {
+            bounds: GraphicsBounds {
+                width: 80.0,
+                height: 100.0,
+            },
+        }),
+    };
+
+    let mut template = ComponentTemplate::new("Multiplexer".to_string(), "digital".to_string(), symbol)?;
+    
+    // 4:1 MUX example
+    template.add_pin(PinTemplate { id: "I0".to_string(), name: "Input 0".to_string(), number: "1".to_string(), x: -40.0, y: -30.0, pin_type: PinType::Input, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "I1".to_string(), name: "Input 1".to_string(), number: "2".to_string(), x: -40.0, y: -10.0, pin_type: PinType::Input, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "I2".to_string(), name: "Input 2".to_string(), number: "3".to_string(), x: -40.0, y: 10.0, pin_type: PinType::Input, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "I3".to_string(), name: "Input 3".to_string(), number: "4".to_string(), x: -40.0, y: 30.0, pin_type: PinType::Input, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "S0".to_string(), name: "Select 0".to_string(), number: "5".to_string(), x: 0.0, y: 50.0, pin_type: PinType::Input, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "S1".to_string(), name: "Select 1".to_string(), number: "6".to_string(), x: 10.0, y: 50.0, pin_type: PinType::Input, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "Y".to_string(), name: "Output".to_string(), number: "7".to_string(), x: 40.0, y: 0.0, pin_type: PinType::Output, electrical: standard_electrical() })?;
+
+    template.keywords = vec!["mux".to_string(), "multiplexer".to_string(), "74157".to_string()];
+    library.add_component_template(template)?;
+    Ok(())
+}
+
+fn add_shift_register(library: &mut ComponentLibrary) -> Result<()> {
+    let symbol = ComponentSymbol {
+        width: 100.0,
+        height: 80.0,
+        draw_commands: vec![
+            DrawCommand {
+                command_type: DrawCommandType::Rectangle,
+                parameters: vec![-40.0, -35.0, 80.0, 70.0],
+                style: Some(DrawStyle {
+                    stroke_width: 2.0,
+                    stroke_color: "#000000".to_string(),
+                    fill_color: Some("#F0F0F0".to_string()),
+                }),
+            },
+            DrawCommand {
+                command_type: DrawCommandType::Text,
+                parameters: vec![0.0, 0.0, 8.0, 74595.0],
+                style: None,
+            },
+        ],
+        graphics: Some(SymbolGraphics {
+            bounds: GraphicsBounds {
+                width: 100.0,
+                height: 80.0,
+            },
+        }),
+    };
+
+    let mut template = ComponentTemplate::new("Shift Register".to_string(), "digital".to_string(), symbol)?;
+    
+    template.add_pin(PinTemplate { id: "SER".to_string(), name: "Serial In".to_string(), number: "1".to_string(), x: -50.0, y: -20.0, pin_type: PinType::Input, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "SRCLK".to_string(), name: "SR Clock".to_string(), number: "2".to_string(), x: -50.0, y: 0.0, pin_type: PinType::Input, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "RCLK".to_string(), name: "Latch Clock".to_string(), number: "3".to_string(), x: -50.0, y: 20.0, pin_type: PinType::Input, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "Q0".to_string(), name: "Q0".to_string(), number: "4".to_string(), x: 50.0, y: -25.0, pin_type: PinType::Output, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "Q1".to_string(), name: "Q1".to_string(), number: "5".to_string(), x: 50.0, y: -10.0, pin_type: PinType::Output, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "Q7S".to_string(), name: "Serial Out".to_string(), number: "6".to_string(), x: 50.0, y: 25.0, pin_type: PinType::Output, electrical: standard_electrical() })?;
+
+    template.keywords = vec!["shift".to_string(), "register".to_string(), "74595".to_string(), "74164".to_string()];
+    library.add_component_template(template)?;
+    Ok(())
+}
+
+fn add_counter(library: &mut ComponentLibrary) -> Result<()> {
+    let symbol = ComponentSymbol {
+        width: 80.0,
+        height: 80.0,
+        draw_commands: vec![
+            DrawCommand {
+                command_type: DrawCommandType::Rectangle,
+                parameters: vec![-35.0, -35.0, 70.0, 70.0],
+                style: Some(DrawStyle {
+                    stroke_width: 2.0,
+                    stroke_color: "#000000".to_string(),
+                    fill_color: Some("#F0F0F0".to_string()),
+                }),
+            },
+            DrawCommand {
+                command_type: DrawCommandType::Text,
+                parameters: vec![0.0, 0.0, 8.0, "CTR".to_string().parse::<f64>().unwrap_or(0.0)],
+                style: None,
+            },
+        ],
+        graphics: Some(SymbolGraphics {
+            bounds: GraphicsBounds {
+                width: 80.0,
+                height: 80.0,
+            },
+        }),
+    };
+
+    let mut template = ComponentTemplate::new("Counter".to_string(), "digital".to_string(), symbol)?;
+    
+    template.add_pin(PinTemplate { id: "CLK".to_string(), name: "Clock".to_string(), number: "1".to_string(), x: -45.0, y: -20.0, pin_type: PinType::Input, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "RST".to_string(), name: "Reset".to_string(), number: "2".to_string(), x: -45.0, y: 0.0, pin_type: PinType::Input, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "EN".to_string(), name: "Enable".to_string(), number: "3".to_string(), x: -45.0, y: 20.0, pin_type: PinType::Input, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "Q0".to_string(), name: "Q0".to_string(), number: "4".to_string(), x: 45.0, y: -20.0, pin_type: PinType::Output, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "Q1".to_string(), name: "Q1".to_string(), number: "5".to_string(), x: 45.0, y: 0.0, pin_type: PinType::Output, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "Q2".to_string(), name: "Q2".to_string(), number: "6".to_string(), x: 45.0, y: 20.0, pin_type: PinType::Output, electrical: standard_electrical() })?;
+
+    template.keywords = vec!["counter".to_string(), "74193".to_string(), "74160".to_string()];
+    library.add_component_template(template)?;
+    Ok(())
+}
+
+fn add_decoder(library: &mut ComponentLibrary) -> Result<()> {
+    let symbol = ComponentSymbol {
+        width: 80.0,
+        height: 100.0,
+        draw_commands: vec![
+            DrawCommand {
+                command_type: DrawCommandType::Rectangle,
+                parameters: vec![-35.0, -45.0, 70.0, 90.0],
+                style: Some(DrawStyle {
+                    stroke_width: 2.0,
+                    stroke_color: "#000000".to_string(),
+                    fill_color: Some("#F0F0F0".to_string()),
+                }),
+            },
+            DrawCommand {
+                command_type: DrawCommandType::Text,
+                parameters: vec![0.0, 0.0, 8.0, "DEC".to_string().parse::<f64>().unwrap_or(0.0)],
+                style: None,
+            },
+        ],
+        graphics: Some(SymbolGraphics {
+            bounds: GraphicsBounds {
+                width: 80.0,
+                height: 100.0,
+            },
+        }),
+    };
+
+    let mut template = ComponentTemplate::new("Decoder".to_string(), "digital".to_string(), symbol)?;
+    
+    template.add_pin(PinTemplate { id: "A0".to_string(), name: "A0".to_string(), number: "1".to_string(), x: -45.0, y: -30.0, pin_type: PinType::Input, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "A1".to_string(), name: "A1".to_string(), number: "2".to_string(), x: -45.0, y: -10.0, pin_type: PinType::Input, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "EN".to_string(), name: "Enable".to_string(), number: "3".to_string(), x: -45.0, y: 10.0, pin_type: PinType::Input, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "Y0".to_string(), name: "Y0".to_string(), number: "4".to_string(), x: 45.0, y: -30.0, pin_type: PinType::Output, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "Y1".to_string(), name: "Y1".to_string(), number: "5".to_string(), x: 45.0, y: -10.0, pin_type: PinType::Output, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "Y2".to_string(), name: "Y2".to_string(), number: "6".to_string(), x: 45.0, y: 10.0, pin_type: PinType::Output, electrical: standard_electrical() })?;
+    template.add_pin(PinTemplate { id: "Y3".to_string(), name: "Y3".to_string(), number: "7".to_string(), x: 45.0, y: 30.0, pin_type: PinType::Output, electrical: standard_electrical() })?;
+
+    template.keywords = vec!["decoder".to_string(), "74138".to_string(), "74154".to_string()];
+    library.add_component_template(template)?;
+    Ok(())
+}

@@ -1,0 +1,90 @@
+# Dependencies
+node_modules/
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Build outputs
+dist/
+dist-ssr/
+build/
+out/
+.output/
+target/
+
+# Tauri backend (Rust code)
+src-tauri/
+*.rs
+
+# IDE and system files
+.vscode/
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Test coverage
+coverage/
+*.lcov
+.nyc_output/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Cache and temp files
+.cache/
+.temp/
+.tmp/
+*.tmp
+
+# Documentation build
+docs/.vitepress/dist/
+docs/.vitepress/cache/
+
+# Generated files
+*.generated.*
+components.d.ts
+auto-imports.d.ts
+
+# Minified files
+*.min.js
+*.min.css
+
+# Vendor files
+vendor/
+public/vendor/
+
+# Large binary files
+*.pdf
+*.zip
+*.tar.gz
+*.dmg
+*.exe
+*.app
+*.AppImage
+*.deb
+*.rpm
+*.msi
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Other
+CHANGELOG.md
+LICENSE

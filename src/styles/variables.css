@@ -1,0 +1,83 @@
+:root {
+  /* Grid Settings */
+  --grid-size-small: 5px;
+  --grid-size-medium: 10px;
+  --grid-size-large: 25px;
+  --grid-color-minor: rgba(0, 0, 0, 0.05);
+  --grid-color-major: rgba(0, 0, 0, 0.1);
+
+  /* Component Sizes */
+  --toolbar-height: 48px;
+  --sidebar-width: 240px;
+  --properties-width: 280px;
+  --statusbar-height: 24px;
+
+  /* Editor Settings */
+  --editor-zoom-min: 0.1;
+  --editor-zoom-max: 10;
+  --editor-zoom-step: 0.1;
+
+  /* Component Colors */
+  --wire-color: #0066cc;
+  --wire-selected: #ff6600;
+  --junction-color: #0066cc;
+  --junction-size: 6px;
+
+  --component-stroke: #000000;
+  --component-fill: #ffffff;
+  --component-selected: #ff6600;
+  --component-hover: #0099ff;
+
+  --pin-color: #cc0000;
+  --pin-connected: #00cc00;
+  --pin-unconnected: #ff0000;
+
+  /* PCB Colors */
+  --pcb-substrate: #1a5c1a;
+  --pcb-copper: #b87333;
+  --pcb-silkscreen: #ffffff;
+  --pcb-soldermask: #0a4c0a;
+  --pcb-paste: #c0c0c0;
+
+  --trace-width-thin: 0.15mm;
+  --trace-width-normal: 0.25mm;
+  --trace-width-thick: 0.5mm;
+  --trace-width-power: 1mm;
+
+  --via-drill-small: 0.3mm;
+  --via-drill-normal: 0.5mm;
+  --via-drill-large: 0.8mm;
+
+  /* Animation */
+  --transition-fast: 150ms;
+  --transition-normal: 250ms;
+  --transition-slow: 350ms;
+
+  /* Z-index Layers */
+  --z-canvas: 1;
+  --z-grid: 2;
+  --z-components: 10;
+  --z-wires: 11;
+  --z-selection: 20;
+  --z-annotations: 21;
+  --z-cursor: 30;
+  --z-toolbar: 100;
+  --z-modal: 1000;
+  --z-tooltip: 1100;
+  --z-notification: 1200;
+}
+
+[data-theme='dark'] {
+  --grid-color-minor: rgba(255, 255, 255, 0.05);
+  --grid-color-major: rgba(255, 255, 255, 0.1);
+
+  --wire-color: #4da6ff;
+  --wire-selected: #ff9933;
+
+  --component-stroke: #e0e0e0;
+  --component-fill: #2a2a2a;
+
+  --pcb-substrate: #0d2e0d;
+  --pcb-soldermask: #052005;
+  --pcb-silkscreen: #e0e0e0;
+}
